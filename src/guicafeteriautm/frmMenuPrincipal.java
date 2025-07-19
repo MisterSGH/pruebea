@@ -14,7 +14,7 @@ import javax.swing.JFrame;
  */
 public class frmMenuPrincipal extends javax.swing.JFrame {
 
-    /**
+    /**sos
      * Creates new form frmMenuPrincipal
      */
     public frmMenuPrincipal() {
