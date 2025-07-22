@@ -6,7 +6,7 @@ package guicafeteriautm;
 
 /**
  *
- * @author saniago 
+ * @author saniago y profesora
  */
 public class frmGestionClientes extends javax.swing.JInternalFrame {
 
