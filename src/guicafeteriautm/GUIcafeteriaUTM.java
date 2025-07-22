@@ -3,7 +3,7 @@ package guicafeteriautm;
 
 /**
  *
- * @author santi
+ * @author santini
  */
 public class GUIcafeteriaUTM {
 
