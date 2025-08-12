@@ -1,5 +1,5 @@
 package guicafeteriautm.clases;
-//      Clase que contien las operaciones crub para el manejo de los usuarios del Sistema
+//Clase que contiene las operaciones crud para el manejo de los usuarios del Sistema
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

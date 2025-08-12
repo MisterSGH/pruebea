@@ -171,7 +171,7 @@ public class frmLoginUsuario extends javax.swing.JFrame {
             // Se oculta esta ventana
             this.setVisible(false);
             //Se construye el objeto de la nueva ventana
-            frmMenuPrincipal menuPrincipal = new frmMenuPrincipal();
+            frmMenuPrincipal menuPrincipal = new frmMenuPrincipal(objUsuario); //con la finalidad que se reconozca el obj yse usen sus parametros
             //menuPrincipal.setUsuarioActual(usuario, rol);
             //se visualiza la pantalla del menu principal
             menuPrincipal.setVisible(true);
@@ -186,7 +186,7 @@ public class frmLoginUsuario extends javax.swing.JFrame {
     //de usuarios
 public boolean validarUsuario(Usuario objUsuario){
 
-    //variables de clase 
+    //variables de clase
         boolean accesoPermitido = false;  //variable de retorno en caso de ser falso o verdadero
         Connection conn;   // objeto de conexion
         PreparedStatement stmt = null;   // variable para la sentencia sql
@@ -198,7 +198,9 @@ public boolean validarUsuario(Usuario objUsuario){
             UsuarioBD bd = new UsuarioBD();
                  rs= bd.consultarUsuarioLogin(conn,objUsuario.getUsuario(), objUsuario.getPassword());
              if (rs.next()) {  //encontro al menos 1 registro con los datos
-                //accedemos al sistema
+                
+               //accedemos al sistema y asignamos el rol del usuario
+                objUsuario.setRol(rs.getString("rol"));
                 accesoPermitido = true;
             }   
               //se cierra la conexion

@@ -1,5 +1,6 @@
 package guicafeteriautm;
 
+import guicafeteriautm.clases.Usuario;
 import guicafeteriautm.utilerias.fondoPantalla;
 import java.awt.Dimension;
 import java.awt.Toolkit;
@@ -16,8 +17,9 @@ public class frmMenuPrincipal extends javax.swing.JFrame {
 
     /**sos
      * Creates new form frmMenuPrincipal
-     */
-    public frmMenuPrincipal() {
+     * @param obj
+     */ 
+    public frmMenuPrincipal(Usuario obj) { //se agrega al metodo const el parametro del objeto usuario
        fondoPantalla fondo = new fondoPantalla();
     initComponents();
     // Maximiza la ventana al iniciar
@@ -36,8 +38,21 @@ public class frmMenuPrincipal extends javax.swing.JFrame {
     } catch (NullPointerException e) {
     System.err.println("No se pudo cargar el icono de la aplicación: " + e.getMessage());
 }
-    }
+    //se establece el titulo con el usuario y el rol
+    this.setTitle("Sistema de Ventas de la UTM "+" Usuario: "+ obj.getUsuario()+ "- Rol:"+obj.getRol());
+    
 
+    //Se comienza a activar y desactivar opciones del menu segun el tipo de usuario en la aplicacion
+    if (obj.getRol().equals("Cliente")){
+        mnuUsuarios.setEnabled(false); //se quita del menu
+        mnuReporteVentas.setEnabled(false); //solo se desactiva 
+        opcCobrar.setEnabled(false); 
+    
+    }else if (obj.getRol().equals("Empleado")) {
+        opcUsuarios.setEnabled(false);
+        opcLevantar.setEnabled(false);
+    }
+    } 
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -53,7 +68,7 @@ public class frmMenuPrincipal extends javax.swing.JFrame {
         menuBar = new javax.swing.JMenuBar();
         mnuUsuarios = new javax.swing.JMenu();
         opcUsuarios = new javax.swing.JMenuItem();
-        opcUsuarios1 = new javax.swing.JMenuItem();
+        opcClientes = new javax.swing.JMenuItem();
         opcEmpleados = new javax.swing.JMenuItem();
         opcAlimentos = new javax.swing.JMenuItem();
         opcBebidas = new javax.swing.JMenuItem();
@@ -84,17 +99,22 @@ public class frmMenuPrincipal extends javax.swing.JFrame {
         });
         mnuUsuarios.add(opcUsuarios);
 
-        opcUsuarios1.setMnemonic('o');
-        opcUsuarios1.setText("Clientes");
-        opcUsuarios1.addActionListener(new java.awt.event.ActionListener() {
+        opcClientes.setMnemonic('o');
+        opcClientes.setText("Clientes");
+        opcClientes.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                opcUsuarios1ActionPerformed(evt);
+                opcClientesActionPerformed(evt);
             }
         });
-        mnuUsuarios.add(opcUsuarios1);
+        mnuUsuarios.add(opcClientes);
 
         opcEmpleados.setMnemonic('s');
         opcEmpleados.setText("Empleados");
+        opcEmpleados.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                opcEmpleadosActionPerformed(evt);
+            }
+        });
         mnuUsuarios.add(opcEmpleados);
 
         opcAlimentos.setMnemonic('a');
@@ -175,13 +195,24 @@ public class frmMenuPrincipal extends javax.swing.JFrame {
 
     }//GEN-LAST:event_opcUsuariosActionPerformed
 
-    private void opcUsuarios1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_opcUsuarios1ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_opcUsuarios1ActionPerformed
+    private void opcClientesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_opcClientesActionPerformed
+    frmGestionClientes ventanaGUI;
+    ventanaGUI = new frmGestionClientes();
+    this.desktopPane.add(ventanaGUI);
+    ventanaGUI.setVisible(true);
+        
+    }//GEN-LAST:event_opcClientesActionPerformed
 
     private void opcSalirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_opcSalirActionPerformed
         System.exit(0);
     }//GEN-LAST:event_opcSalirActionPerformed
+
+    private void opcEmpleadosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_opcEmpleadosActionPerformed
+           frmGestionEmpleados ventanaGUI;
+           ventanaGUI = new frmGestionEmpleados();
+           this.desktopPane.add(ventanaGUI);
+           ventanaGUI.setVisible(true);
+    }//GEN-LAST:event_opcEmpleadosActionPerformed
 
     /**
      * @param args the command line arguments
@@ -213,7 +244,7 @@ public class frmMenuPrincipal extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new frmMenuPrincipal().setVisible(true);
+                new frmMenuPrincipal(null).setVisible(true);
             }
         });
     }
@@ -229,13 +260,13 @@ public class frmMenuPrincipal extends javax.swing.JFrame {
     private javax.swing.JMenu mnuUsuarios;
     private javax.swing.JMenuItem opcAlimentos;
     private javax.swing.JMenuItem opcBebidas;
+    private javax.swing.JMenuItem opcClientes;
     private javax.swing.JMenuItem opcCobrar;
     private javax.swing.JMenuItem opcConsultar;
     private javax.swing.JMenuItem opcEmpleados;
     private javax.swing.JMenuItem opcLevantar;
     private javax.swing.JMenuItem opcSalir;
     private javax.swing.JMenuItem opcUsuarios;
-    private javax.swing.JMenuItem opcUsuarios1;
     private javax.swing.JMenuItem opcVer;
     // End of variables declaration//GEN-END:variables
 

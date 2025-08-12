@@ -1,22 +1,124 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JInternalFrame.java to edit this template
- */
 package guicafeteriautm;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.PreparedStatement;
+import guicafeteriautm.clases.*;
+import java.util.logging.Logger;
+import java.util.logging.Level;
+import java.util.ArrayList;
+import java.sql.SQLException;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
 
 /**
  *
  * @author santi
  */
 public class frmGestionClientes extends javax.swing.JInternalFrame {
-
+    ConexionBD objetoConexionBD = new ConexionBD();
+    Connection conn;
+    PreparedStatement stmt = null;
+    ResultSet rs = null;
+    String busqueda = "";
     /**
      * Creates new form frmGestionClientes
      */
     public frmGestionClientes() {
-        initComponents();
+       try {
+            initComponents();
+            llenarDataTable();
+            } catch (ClassNotFoundException ex) {
+                Logger.getLogger(frmGestionClientes.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
+    
+        public final void llenarDataTable() throws ClassNotFoundException{
+        ArrayList<Cliente> arregloClientes = new ArrayList<>();
+        String sql = "SELECT idcliente,usuario.usuario,nombre,beca,porcentaje FROM cliente inner join usuario on cliente.idusuario=usuario.idusuario";
+        boolean buscar = false;
+        
+        try{
+            conn=objetoConexionBD.conexionDataBase();
+            
+            if(!busqueda.equals("")){
+                sql += " WHERE nombre=?";
+                buscar=true;
+            }
+            
+            System.out.println(sql);
+            
+            //Preparar parametros
+            stmt=conn.prepareStatement(sql);
+            if(buscar){
+                stmt.setString(1, busqueda);
+            }
+            
+            rs=stmt.executeQuery();
+            
+            //Verificar si hay resultados
+            boolean tieneDatos = false;
+            while (rs.next()){
+                tieneDatos=true;
+                Cliente cliente = new Cliente(
+                    rs.getInt("idcliente"),
+                    rs.getString("usuario.usuario"),
+                    rs.getString("nombre"),
+                    rs.getBoolean("beca"),
+                    rs.getInt("porcentaje")  
+                );
+                arregloClientes.add(cliente);
+            }
+            
+            if(!tieneDatos){
+                JOptionPane.showMessageDialog(null,"Datos no localizados");
+            }
+            
+            //Actualizar Tabla
+            DefaultTableModel modelo = (DefaultTableModel) tblClientes.getModel();
+            modelo.setRowCount(0);//Limpia la tabla
+            for (Cliente item : arregloClientes){
+                Object[] fila = {
+                    item.getIdCliente(),
+                    item.getNombre(),
+                    item.getUsuario(),
+                    
+                    item.isBeca(),
+                    item.getPorcentaje()
+                };
+                modelo.addRow(fila);
+            }
+            
+            tblClientes.setModel(modelo);
+            
+            //Seleccionar primera fila si hay daatos
+            if(tblClientes.getRowCount()>0){
+                tblClientes.setRowSelectionInterval(0,0);
+                llenarTextBox();
+            }   
+        }catch(SQLException ex){
+            Logger.getLogger(frmGestionUsuarios.class.getName()).log(Level.SEVERE,null,ex);
+        }
+    }
+    
+        
+        public void llenarTextBox(){
+    int fila = tblClientes.getSelectedRow();
+    
+    if(fila>=0){
+        txtIDUsuario.setText(tblClientes.getValueAt(fila, 0).toString());
+        txtNombre.setText(tblClientes.getValueAt(fila, 1).toString());
+        txtUsuario.setText(tblClientes.getValueAt(fila,2).toString());
+        
+        
+        if(tblClientes.getValueAt(fila,3).equals(true)){
+            rdbBecaSI.setSelected(true);
+        } else if(tblClientes.getValueAt(fila,3).equals(false)){
+            rdbBecaNO.setSelected(true);
+        }
+        txtPorcentaje.setText(tblClientes.getValueAt(fila, 4).toString());
+        }
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -29,23 +131,23 @@ public class frmGestionClientes extends javax.swing.JInternalFrame {
         jdialogBuscar = new javax.swing.JDialog();
         pnlBusqueda = new javax.swing.JPanel();
         lblProporciona = new javax.swing.JLabel();
-        txtUsuario = new javax.swing.JTextField();
+        txtUserBuscar = new javax.swing.JTextField();
         btgBecado = new javax.swing.ButtonGroup();
         pnlClientes = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
+        tblClientes = new javax.swing.JTable();
         pnlRegistroClientes = new javax.swing.JPanel();
         lblIdCliente = new javax.swing.JLabel();
         lblUsuario = new javax.swing.JLabel();
         lblNombre = new javax.swing.JLabel();
         lblBecado = new javax.swing.JLabel();
         lblPorcentaje = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
-        jTextField2 = new javax.swing.JTextField();
-        jTextField3 = new javax.swing.JTextField();
-        jTextField4 = new javax.swing.JTextField();
-        jRadioButton1 = new javax.swing.JRadioButton();
-        jRadioButton2 = new javax.swing.JRadioButton();
+        txtIDUsuario = new javax.swing.JTextField();
+        txtUsuario = new javax.swing.JTextField();
+        txtNombre = new javax.swing.JTextField();
+        txtPorcentaje = new javax.swing.JTextField();
+        rdbBecaSI = new javax.swing.JRadioButton();
+        rdbBecaNO = new javax.swing.JRadioButton();
         pnlAcciones = new javax.swing.JPanel();
         btnActualizar = new javax.swing.JButton();
         btnBuscar = new javax.swing.JButton();
@@ -56,6 +158,12 @@ public class frmGestionClientes extends javax.swing.JInternalFrame {
 
         lblProporciona.setText("Proporciona el usuario:");
 
+        txtUserBuscar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtUserBuscarActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout pnlBusquedaLayout = new javax.swing.GroupLayout(pnlBusqueda);
         pnlBusqueda.setLayout(pnlBusquedaLayout);
         pnlBusquedaLayout.setHorizontalGroup(
@@ -64,7 +172,7 @@ public class frmGestionClientes extends javax.swing.JInternalFrame {
                 .addGap(32, 32, 32)
                 .addGroup(pnlBusquedaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(lblProporciona, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(txtUsuario))
+                    .addComponent(txtUserBuscar))
                 .addContainerGap(35, Short.MAX_VALUE))
         );
         pnlBusquedaLayout.setVerticalGroup(
@@ -73,7 +181,7 @@ public class frmGestionClientes extends javax.swing.JInternalFrame {
                 .addGap(16, 16, 16)
                 .addComponent(lblProporciona, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(txtUsuario, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(txtUserBuscar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(38, Short.MAX_VALUE))
         );
 
@@ -95,10 +203,11 @@ public class frmGestionClientes extends javax.swing.JInternalFrame {
         );
 
         setBackground(new java.awt.Color(0, 153, 153));
+        setClosable(true);
         setTitle("Gestion de clientes");
 
-        jTable1.setBackground(new java.awt.Color(153, 153, 153));
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+        tblClientes.setBackground(new java.awt.Color(153, 153, 153));
+        tblClientes.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null, null},
                 {null, null, null, null, null},
@@ -109,7 +218,12 @@ public class frmGestionClientes extends javax.swing.JInternalFrame {
                 "id cliente", "nombre", "usuario", "becado", "porcentaje"
             }
         ));
-        jScrollPane1.setViewportView(jTable1);
+        tblClientes.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tblClientesMouseClicked(evt);
+            }
+        });
+        jScrollPane1.setViewportView(tblClientes);
 
         javax.swing.GroupLayout pnlClientesLayout = new javax.swing.GroupLayout(pnlClientes);
         pnlClientes.setLayout(pnlClientesLayout);
@@ -117,7 +231,7 @@ public class frmGestionClientes extends javax.swing.JInternalFrame {
             pnlClientesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pnlClientesLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 594, Short.MAX_VALUE)
+                .addComponent(jScrollPane1)
                 .addContainerGap())
         );
         pnlClientesLayout.setVerticalGroup(
@@ -132,7 +246,7 @@ public class frmGestionClientes extends javax.swing.JInternalFrame {
 
         lblIdCliente.setText("ID Cliente:");
 
-        lblUsuario.setText("Cliente:");
+        lblUsuario.setText("Usuario:");
 
         lblNombre.setText("Nombre:");
 
@@ -140,16 +254,34 @@ public class frmGestionClientes extends javax.swing.JInternalFrame {
 
         lblPorcentaje.setText("Porcentaje:");
 
-        btgBecado.add(jRadioButton1);
-        jRadioButton1.setForeground(new java.awt.Color(0, 153, 0));
-        jRadioButton1.setText("SI");
-
-        btgBecado.add(jRadioButton2);
-        jRadioButton2.setForeground(new java.awt.Color(255, 0, 0));
-        jRadioButton2.setText("NO");
-        jRadioButton2.addActionListener(new java.awt.event.ActionListener() {
+        txtIDUsuario.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jRadioButton2ActionPerformed(evt);
+                txtIDUsuarioActionPerformed(evt);
+            }
+        });
+
+        txtUsuario.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtUsuarioActionPerformed(evt);
+            }
+        });
+
+        txtNombre.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtNombreActionPerformed(evt);
+            }
+        });
+
+        btgBecado.add(rdbBecaSI);
+        rdbBecaSI.setForeground(new java.awt.Color(0, 153, 0));
+        rdbBecaSI.setText("SI");
+
+        btgBecado.add(rdbBecaNO);
+        rdbBecaNO.setForeground(new java.awt.Color(255, 0, 0));
+        rdbBecaNO.setText("NO");
+        rdbBecaNO.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                rdbBecaNOActionPerformed(evt);
             }
         });
 
@@ -163,6 +295,11 @@ public class frmGestionClientes extends javax.swing.JInternalFrame {
         });
 
         btnBuscar.setText("Buscar");
+        btnBuscar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnBuscarActionPerformed(evt);
+            }
+        });
 
         btnVerTodos.setText("Ver todos");
         btnVerTodos.addActionListener(new java.awt.event.ActionListener() {
@@ -201,25 +338,39 @@ public class frmGestionClientes extends javax.swing.JInternalFrame {
         pnlRegistroClientesLayout.setHorizontalGroup(
             pnlRegistroClientesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlRegistroClientesLayout.createSequentialGroup()
-                .addGap(21, 21, 21)
                 .addGroup(pnlRegistroClientesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(lblPorcentaje, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(lblBecado, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(lblNombre, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(lblUsuario, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(lblIdCliente, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(pnlRegistroClientesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(pnlRegistroClientesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addComponent(jTextField1)
-                        .addComponent(jTextField2)
-                        .addComponent(jTextField3)
-                        .addComponent(jTextField4, javax.swing.GroupLayout.DEFAULT_SIZE, 306, Short.MAX_VALUE))
                     .addGroup(pnlRegistroClientesLayout.createSequentialGroup()
-                        .addComponent(jRadioButton1)
-                        .addGap(18, 18, 18)
-                        .addComponent(jRadioButton2)))
-                .addGap(46, 46, 46)
+                        .addGap(21, 21, 21)
+                        .addGroup(pnlRegistroClientesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(lblPorcentaje, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(lblBecado, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(pnlRegistroClientesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(txtPorcentaje, javax.swing.GroupLayout.PREFERRED_SIZE, 306, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(pnlRegistroClientesLayout.createSequentialGroup()
+                                .addComponent(rdbBecaSI)
+                                .addGap(18, 18, 18)
+                                .addComponent(rdbBecaNO)))
+                        .addGap(46, 46, 46))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlRegistroClientesLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(pnlRegistroClientesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(pnlRegistroClientesLayout.createSequentialGroup()
+                                .addComponent(lblNombre, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(txtNombre))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlRegistroClientesLayout.createSequentialGroup()
+                                .addGroup(pnlRegistroClientesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addGroup(pnlRegistroClientesLayout.createSequentialGroup()
+                                        .addComponent(lblIdCliente, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                        .addComponent(txtIDUsuario))
+                                    .addGroup(pnlRegistroClientesLayout.createSequentialGroup()
+                                        .addComponent(lblUsuario, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                        .addComponent(txtUsuario)))
+                                .addGap(40, 40, 40)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
                 .addComponent(pnlAcciones, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
@@ -229,27 +380,26 @@ public class frmGestionClientes extends javax.swing.JInternalFrame {
                 .addComponent(pnlAcciones, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 0, Short.MAX_VALUE))
             .addGroup(pnlRegistroClientesLayout.createSequentialGroup()
-                .addContainerGap()
                 .addGroup(pnlRegistroClientesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblIdCliente)
-                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(6, 6, 6)
-                .addGroup(pnlRegistroClientesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lblUsuario)
-                    .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                    .addComponent(txtIDUsuario, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(4, 4, 4)
                 .addGroup(pnlRegistroClientesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblNombre)
-                    .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                    .addComponent(txtNombre, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(pnlRegistroClientesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblUsuario)
+                    .addComponent(txtUsuario, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(38, 38, 38)
                 .addGroup(pnlRegistroClientesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblBecado)
-                    .addComponent(jRadioButton1)
-                    .addComponent(jRadioButton2))
+                    .addComponent(rdbBecaSI)
+                    .addComponent(rdbBecaNO))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(pnlRegistroClientesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblPorcentaje)
-                    .addComponent(jTextField4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(txtPorcentaje, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -278,16 +428,76 @@ public class frmGestionClientes extends javax.swing.JInternalFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnVerTodosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnVerTodosActionPerformed
-        // TODO add your handling code here:
+       try {
+            llenarDataTable();       
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(frmGestionClientes.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }//GEN-LAST:event_btnVerTodosActionPerformed
 
     private void btnActualizarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnActualizarActionPerformed
-        // TODO add your handling code here:
+     try {
+        int idCliente = Integer.parseInt(txtIDUsuario.getText().trim());
+        String nombre = txtNombre.getText().trim();
+        String usuario = txtUsuario.getText().trim();
+        int porcentaje = Integer.parseInt(txtPorcentaje.getText().trim());
+        boolean beca = rdbBecaSI.isSelected();
+
+        ClienteBD dao = new ClienteBD();
+
+        try (Connection conn = objetoConexionBD.conexionDataBase()) {
+            boolean actualizado = dao.actualizarCliente(conn, idCliente, nombre, usuario, beca, porcentaje);
+
+            if (actualizado) {
+                JOptionPane.showMessageDialog(null, "Cliente actualizado exitosamente");
+                llenarDataTable();
+            } else {
+                JOptionPane.showMessageDialog(null, "No se encontró un Cliente con esa ID");
+            }
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(null, "Error al actualizar cliente: " + ex.getMessage());
+        }
+    } catch (NumberFormatException ex) {
+        JOptionPane.showMessageDialog(null, "ID inválido, verifique que sea un número");
+    } catch (ClassNotFoundException ex) {
+        JOptionPane.showMessageDialog(null, "Error al cargar el controlador de base de datos: " + ex.getMessage());
+    }
     }//GEN-LAST:event_btnActualizarActionPerformed
 
-    private void jRadioButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioButton2ActionPerformed
+    private void rdbBecaNOActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rdbBecaNOActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_jRadioButton2ActionPerformed
+    }//GEN-LAST:event_rdbBecaNOActionPerformed
+
+    private void btnBuscarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBuscarActionPerformed
+        try {
+            busqueda = JOptionPane.showInputDialog(rootPane, "Ingresa el nombre a buscar");
+            System.out.println(busqueda);
+            llenarDataTable();
+            busqueda="";
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(frmGestionClientes.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_btnBuscarActionPerformed
+
+    private void tblClientesMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblClientesMouseClicked
+        llenarTextBox();
+    }//GEN-LAST:event_tblClientesMouseClicked
+
+    private void txtIDUsuarioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtIDUsuarioActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtIDUsuarioActionPerformed
+
+    private void txtNombreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtNombreActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtNombreActionPerformed
+
+    private void txtUsuarioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtUsuarioActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtUsuarioActionPerformed
+
+    private void txtUserBuscarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtUserBuscarActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtUserBuscarActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -295,14 +505,7 @@ public class frmGestionClientes extends javax.swing.JInternalFrame {
     private javax.swing.JButton btnActualizar;
     private javax.swing.JButton btnBuscar;
     private javax.swing.JButton btnVerTodos;
-    private javax.swing.JRadioButton jRadioButton1;
-    private javax.swing.JRadioButton jRadioButton2;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTable jTable1;
-    private javax.swing.JTextField jTextField1;
-    private javax.swing.JTextField jTextField2;
-    private javax.swing.JTextField jTextField3;
-    private javax.swing.JTextField jTextField4;
     private javax.swing.JDialog jdialogBuscar;
     private javax.swing.JLabel lblBecado;
     private javax.swing.JLabel lblIdCliente;
@@ -314,6 +517,13 @@ public class frmGestionClientes extends javax.swing.JInternalFrame {
     private javax.swing.JPanel pnlBusqueda;
     private javax.swing.JPanel pnlClientes;
     private javax.swing.JPanel pnlRegistroClientes;
+    private javax.swing.JRadioButton rdbBecaNO;
+    private javax.swing.JRadioButton rdbBecaSI;
+    private javax.swing.JTable tblClientes;
+    private javax.swing.JTextField txtIDUsuario;
+    private javax.swing.JTextField txtNombre;
+    private javax.swing.JTextField txtPorcentaje;
+    private javax.swing.JTextField txtUserBuscar;
     private javax.swing.JTextField txtUsuario;
     // End of variables declaration//GEN-END:variables
 }
